@@ -47,6 +47,7 @@ uint32_t PS1::zad2_0(const std::string& inFilePath)
     uint32_t max = 0;
     uint32_t tmpMax = 1;
 
+
     for(auto iter1{bitsets.begin()}, iter2{++bitsets.begin()}; iter2 != bitsets.end(); ++iter1, ++iter2)
     {
         if(*iter1 == *iter2)
@@ -139,6 +140,7 @@ uint32_t PS1::zad2_2(const std::string& inFilePath)
     bitsets.reserve(dataCount);
 
     uint64_t maxBitset = 0;
+    uint64_t minBitset = UINT64_MAX;
 
     while(getline(inStream, line))
     {
@@ -146,13 +148,16 @@ uint32_t PS1::zad2_2(const std::string& inFilePath)
 
         if(maxBitset < bitsets.back())
             maxBitset = bitsets.back();
+
+        if(minBitset > bitsets.back())
+            minBitset = bitsets.back();
     }
 
     uint32_t maxNum = 0;
-    std::vector<uint32_t> quantities(maxBitset+1, 0);
+    std::vector<uint32_t> quantities(maxBitset - minBitset + 1, 0);
     for(auto bitset : bitsets)
-        if(++quantities[bitset] > maxNum)
-            maxNum = quantities[bitset];
+        if(++quantities[bitset - minBitset] > maxNum)
+            maxNum = quantities[bitset - minBitset];
 
     return maxNum;
 }

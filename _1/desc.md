@@ -8,10 +8,10 @@
 
 2. Znajdywanie w posortowanej liście najdłużeszego podciągu takich samych danych
 
-*      Złożoność :: liniowa => O(2*n)
+*      Złożoność :: liniowa => O(2n)
 <br />
 
-    Czyli :: O((n*(n+1))/2 + 2*n)
+     O((n*(n+1))/2 + 2*n) = zl. kwadratowa
 <br /><br />
 <table>
    <thead>
@@ -47,13 +47,13 @@
 czy dana wartość pojawiła się jeśli tak inkremetnacja liczby całkowitej powiązanej z tą daną
 jeśli nie dodanie nowej wartości do tablicy
 
-*      Złożoność :: kwadratowa => O(~(n*(n+1))/2)  [zakładając że w najgorszym wypadku wszystkie dane są unikalne]
+*      Złożoność :: kwadratowa => O((n*(n+1))/2)  [zakładając że w najgorszym wypadku wszystkie dane są unikalne]
 
 2. Szukanie max
 *      Złożoność :: liniowa => O(n)
 <br />
 
-     Czyli :: O((n*(n+1))/2 + n)
+     O((n*(n+1))/2 + n) = zl. kwadratowa
 <br /><br />
 
 
@@ -87,17 +87,17 @@ jeśli nie dodanie nowej wartości do tablicy
 
 1. Wczytywanie danych na tablicę dynamiczną i szukanie max
 
-*      Złożoność :: linionwa => O(n)  [zakładając że w najgorszym wypadku wszystkie dane są unikalne]
+*      Złożoność :: linionwa => O(3n)  [zakładając że w najgorszym wypadku wszystkie dane są unikalne]
 
 2. Wykorzystanie tablicy o indeksach wartościowanych w zakresie danych liczb binarnych do inkremetnacji 
 wartości im przypisanych sum
 *      Złożoność :: liniowa => O(n)
 
-3! Alokacja tablicy o zakresie [0, maksymalna wartość spośród danych]
+3! Alokacja tablicy o zakresie [minimalna wartosc sposrod danych, maksymalna wartość spośród danych]
 *      Złożoność pamięciowa :: O(2^25 * 4)
 <br />
 
-     Czyli :: O((n*(n+1))/2 + n)
+     O(3n + n) = zl. liniowa
 <br /><br />
 
 
