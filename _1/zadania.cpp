@@ -8,18 +8,6 @@
 #include <array>
 
 
-/*
- * 1. Wczytywanie zmiennych z pliku na liste przy jednoczesnym sortowaniu danych rosnąco
- *
- *      Złożoność :: artmetyczna => O(~(n*(n+1))/2)  [zakładając że w najgorszym wypadku dane są unikalne i posortowane malejąco]
- *
- * 2. Znajdywanie w posortowanej liście najdłużeszego podciągu takich samych danych
- *
- *      Złożoność :: liniowa => O(~2*n)
- *
- * Czyli :: O((n*(n+1))/2 + 2*n)
- */
-
 uint32_t PS1::zad2_0(const std::string& inFilePath)
 {
     std::ifstream inStream(inFilePath);
@@ -62,20 +50,6 @@ uint32_t PS1::zad2_0(const std::string& inFilePath)
     return max;
 }
 
-/*
- * 1. Wczytywanie zmiennych z pliku do dynamicznej tablicy przy jednoczesnym sprawdzaniu
- *    czy dana wartość pojawiła się jeśli tak inkremetnacja liczby całkowitej powiązanej z tą daną
- *    jeśli nie
- *
- *      Złożoność :: artmetyczna => O(~(n*(n+1))/2)  [zakładając że w najgorszym wypadku wszystkie dane są unikalne]
- *
- * 2. Szukanie max
- *
- *      Złożoność :: liniowa => O(n)
- *
- * Czyli :: O((n*(n+1))/2 + n)
- */
-
 
 uint32_t PS1::zad2_1(const std::string& inFilePath)
 {
@@ -113,19 +87,6 @@ uint32_t PS1::zad2_1(const std::string& inFilePath)
     return max;
 }
 
-/*
- * 1. Wczytywanie zmiennych z pliku do dynamicznej tablicy przy jednoczesnym sprawdzaniu
- *    czy dana wartość pojawiła się jeśli tak inkremetnacja liczby całkowitej powiązanej z tą daną
- *    jeśli nie
- *
- *      Złożoność :: kwadratowa => O(~(n*(n+1))/2)  [zakładając że w najgorszym wypadku wszystkie dane są unikalne]
- *
- * 2. Szukanie max
- *
- *      Złożoność :: liniowa => O(n)
- *
- * Czyli :: O((n*(n+1))/2 + n)
- */
 
 uint32_t PS1::zad2_2(const std::string& inFilePath)
 {

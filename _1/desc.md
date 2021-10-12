@@ -93,8 +93,6 @@ jeśli nie dodanie nowej wartości do tablicy
 wartości im przypisanych sum
 *      Złożoność :: liniowa => O(n)
 
-3! Alokacja tablicy o zakresie [minimalna wartosc sposrod danych, maksymalna wartość spośród danych]
-*      Złożoność pamięciowa :: O(2^25 * 4)
 <br />
 
      O(3n + n) = zl. liniowa
