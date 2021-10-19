@@ -58,6 +58,7 @@ Jeśli wartość nie wystąpiła, dodaje się ją do tablicy.
 </table>
 
 ##<header> Rozwiązanie szybkie</header>
+<br />
 W rozwiązaniu szybkim najpierw wczytuje się elementy do tablicy jednocześnie szukając pośród
 nich minimum oraz maksimum. Następnie deklaruje się drugą tablice której indeksami są wartości
 danych z pierwszej tablicy. Podczas jej deklaracji pod uwagę brana jest wcześniej znaleziona wartość
