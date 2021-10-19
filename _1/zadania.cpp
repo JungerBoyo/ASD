@@ -1,13 +1,8 @@
 #include "zadania.h"
-
-#include <fmt/format.h>
-#include <list>
 #include <fstream>
 #include <bitset>
 #include <vector>
 #include <array>
-#include <sstream>
-#include <future>
 
 uint32_t PS1::zad2_1(const std::string& inFilePath)
 {
