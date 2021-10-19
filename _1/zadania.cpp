@@ -6,50 +6,8 @@
 #include <bitset>
 #include <vector>
 #include <array>
-
-
-uint32_t PS1::zad2_0(const std::string& inFilePath)
-{
-    std::ifstream inStream(inFilePath);
-
-    std::string line;
-    getline(inStream, line);
-
-    uint32_t dataCount = std::stoul(line);
-
-    std::list<std::bitset<25>> bitsets;
-
-    while(getline(inStream, line))
-    {
-        std::bitset<25> tmpBitset(line);
-
-        auto iter = bitsets.cbegin();
-        for(;iter != bitsets.cend() && tmpBitset.to_ulong() < iter->to_ulong(); ++iter);
-
-        if(iter != bitsets.cend())
-            bitsets.insert(iter, tmpBitset);
-        else
-            bitsets.push_back(tmpBitset);
-    }
-
-    uint32_t max = 0;
-    uint32_t tmpMax = 1;
-
-
-    for(auto iter1{bitsets.begin()}, iter2{++bitsets.begin()}; iter2 != bitsets.end(); ++iter1, ++iter2)
-    {
-        if(*iter1 == *iter2)
-            ++tmpMax;
-        else
-        {
-            if(tmpMax > max) max = tmpMax;
-            tmpMax = 1;
-        }
-    }
-
-    return max;
-}
-
+#include <sstream>
+#include <future>
 
 uint32_t PS1::zad2_1(const std::string& inFilePath)
 {
@@ -58,31 +16,37 @@ uint32_t PS1::zad2_1(const std::string& inFilePath)
     std::string line;
     getline(inStream, line);
 
+    /// wczytanie ilości danych
     uint32_t dataCount = std::stoul(line);
 
+    /// definicja tablicy first - dana, second - suma
     std::vector<std::pair<std::bitset<25>, uint32_t>> bitsets;
     bitsets.reserve(dataCount);
 
+    uint32_t max = 0;/// maksymalna ilość takich samych danych
     while(getline(inStream, line))
     {
+        /// wczytanie danej
         std::bitset<25> tmpBitset(line);
 
-        bool contains{false};
+        bool contains{false}; /// dana - czy istnieje w dotychczasowch wartosciach
         for (auto& bitset : bitsets)
-            if (tmpBitset == bitset.first)
+            if (tmpBitset == bitset.first) /// jesli zdarzy się że istnieje
             {
-                bitset.second++;
-                contains = true;
-                break;
+                if(++bitset.second > max) /// zinkrementuj i porównaj z max
+                    max = bitset.second; /// jeśli większe od max zauktualizuj max
+
+                contains = true; /// zawiera się
+                break; /// wyjdź z pętli
             }
 
-        if (!contains)
-            bitsets.emplace_back(std::make_pair(tmpBitset, 1));
+        if (!contains) /// jeśli jeszcze nie istnieje
+            bitsets.emplace_back(std::make_pair(tmpBitset, 1)); /// dodaj do tablicy
     }
 
-    uint32_t max = 0;
-    for(auto bitset: bitsets)
-        if(bitset.second > max) max = bitset.second;
+    /// w przypadku gdy wszystkie wartości są unikalne ustaw max na 1
+    if(!max)
+        max = 1;
 
     return max;
 }
@@ -97,28 +61,43 @@ uint32_t PS1::zad2_2(const std::string& inFilePath)
 
     uint32_t dataCount = std::stoul(line);
 
-    std::vector<uint64_t> bitsets;
+    ///deklaracja tablicy na dane
+    std::vector<uint32_t> bitsets;
     bitsets.reserve(dataCount);
 
-    uint64_t maxBitset = 0;
-    uint64_t minBitset = UINT64_MAX;
+    uint32_t maxBitset = 0;         /// maksymalna dana
+    uint32_t minBitset = UINT32_MAX;/// minimalna dana
 
     while(getline(inStream, line))
     {
-        bitsets.emplace_back(std::bitset<25>(line).to_ulong());
+        /// konwersja ze bitsetu w formacie string do uint32_t
+        uint32_t tmpBitset = 0;
+        for(uint32_t i{0}; i<line.size(); ++i)
+            if(line[i] == '1')
+                tmpBitset |= (1 << (line.size()-1 - i));
 
-        if(maxBitset < bitsets.back())
-            maxBitset = bitsets.back();
+        bitsets.push_back(tmpBitset);
 
-        if(minBitset > bitsets.back())
-            minBitset = bitsets.back();
+        /// jeśli obecna dana większa od max aktualizuj max
+        if(maxBitset < tmpBitset)
+            maxBitset = tmpBitset;
+
+        /// jeśli obecna dana mniejsza od min aktualizuj min
+        if(minBitset > tmpBitset)
+            minBitset = tmpBitset;
     }
 
-    uint32_t maxNum = 0;
-    std::vector<uint32_t> quantities(maxBitset - minBitset + 1, 0);
+    uint32_t maxNum = 0; /// maksymalna ilość takich samych danych
+
+    /// zadeklaruj "hash set", o wielkości [0, maxBitset - minBitset + 1)
+    std::vector<uint32_t> sums(maxBitset - minBitset + 1, 0);
     for(auto bitset : bitsets)
-        if(++quantities[bitset - minBitset] > maxNum)
-            maxNum = quantities[bitset - minBitset];
+        /// "zahashuj" wartość bitset odejmując od nań wartość
+        /// minBitsetu/offsetu w dół, następnie zinkrementuj
+        /// przyporzadkowaną sume i sprawdź czy jest wieksza od
+        /// dotychczasowego maksimum jeśli tak aktualizuj maxNum
+        if(++sums[bitset - minBitset] > maxNum)
+            maxNum = sums[bitset - minBitset];
 
     return maxNum;
 }
