@@ -1,1 +1,0 @@
-add_library(zadaniaCwiczenia zad.h zad.cpp)
