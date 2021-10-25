@@ -27,9 +27,9 @@ namespace utils
     };
 
     template<typename T>
-    concept has_ostream = requires(T value)
+    concept has_ostream = requires(const T& value)
     {
-        { std::cout << value } -> same_as<std::ostream&>;
+        { std::cout << value } -> same_as<std::ostream>;
     };
 
     template<typename T>
