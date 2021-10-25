@@ -1,6 +1,8 @@
 #ifndef ASD_PS_CONCEPTS_H
 #define ASD_PS_CONCEPTS_H
 
+#include <iostream>
+
 namespace utils
 {
     namespace detail
@@ -25,9 +27,9 @@ namespace utils
     };
 
     template<typename T>
-    concept has_ostream = requires(std::ostream& os, const T& value)
+    concept has_ostream = requires(T value)
     {
-        { operator<<(os, value) } -> same_as<std::ostream>;
+        { std::cout << value } -> same_as<std::ostream&>;
     };
 
     template<typename T>

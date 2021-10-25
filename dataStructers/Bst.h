@@ -12,7 +12,7 @@ namespace MyDSTRS
     class TreeNode;
 
     template<typename T>
-    requires (utils::has_operatorLE<T> && utils::has_operatorHI<T>) || std::is_arithmetic_v<T>
+    requires ((utils::has_operatorLE<T> && utils::has_operatorHI<T>) || std::is_arithmetic_v<T>) && utils::has_ostream<T>
     class BST
     {
         public:

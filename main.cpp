@@ -31,15 +31,8 @@ std::tuple<f64, uint32_t> launch1(const std::string& path)
 
 int main()
 {
-    MyDSTRS::BST<uint32_t> tree;
 
-    /*
-     *             8
-     *         1       10
-     *      1     3        33
-     *   0      2   7
-     * 0
-     */
+    MyDSTRS::BST<uint32_t> tree;
 
     std::mt19937 generator((std::random_device()()));
     std::uniform_int_distribution<uint32_t> distribution(0, 1000000);
