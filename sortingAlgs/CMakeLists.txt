@@ -1,0 +1,1 @@
+add_library(sortAlgs INTERFACE sortAlgs.h sortAlgsImpl.tpp)

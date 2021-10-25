@@ -1,0 +1,1 @@
+add_library(bst INTERFACE Bst.h)
