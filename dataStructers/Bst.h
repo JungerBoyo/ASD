@@ -4,33 +4,10 @@
 #include <memory>
 #include <stack>
 #include <fmt/format.h>
+#include "concepts.h"
 
 namespace MyDSTRS
 {
-    namespace utils
-    {
-        namespace detail
-        {
-            template<typename T, typename U>
-            concept SameHelper = std::is_same_v<T, U>;
-        }
-
-        template<typename T, typename U>
-        concept same_as = detail::SameHelper<T, U> && detail::SameHelper<U, T>;
-
-        template<typename T>
-        concept has_operatorLE = requires(const T& lhs, const T& rhs)
-        {
-            { operator<(lhs, rhs) } -> same_as<bool>;
-        };
-
-        template<typename T>
-        concept has_operatorHI = requires(const T& lhs, const T& rhs)
-        {
-            { operator>(lhs, rhs) } -> same_as<bool>;
-        };
-    }
-
     template<typename T>
     class TreeNode;
 
