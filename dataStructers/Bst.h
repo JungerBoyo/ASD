@@ -89,7 +89,7 @@ namespace MyDSTRS
     {
         friend class BST<T>;
 
-        TreeNode(T&& value) : value(std::move(value)) { }
+        TreeNode(T&& value) : value(std::forward<T>(value)) { }
 
         T value;
         std::shared_ptr<TreeNode<T>> lhsPtr{nullptr};

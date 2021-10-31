@@ -2,17 +2,14 @@
 #include <vector>
 #include <array>
 #include <fstream>
-#include <fmt/format.h>
 
 struct DynamicBitset
 {
     DynamicBitset() = default;
 
     DynamicBitset(std::size_t bitsCount, bool bitsState)
-    {
-        auto value = bitsState ? UINT32_MAX : 0;
-        _bits.resize(bitsCount / 32 + static_cast<uint32_t>(bitsCount % 32 != 0), value);
-    }
+        : _bits(bitsCount / 32 + static_cast<uint32_t>(bitsCount % 32 != 0), bitsState ? UINT32_MAX : 0)
+    {}
 
     void set(std::size_t index)
     {
@@ -34,7 +31,8 @@ struct DynamicBitset
         std::vector<uint32_t> _bits;
 };
 
-///3D :>
+///------------
+#pragma region zad30
 
 struct WaterStateSpace
 {
@@ -153,8 +151,8 @@ uint32_t PS2::zad3_0(const std::string& path)
 
     return stateSpace.getCounterValue();
 }
-
-/// 2D...
+#pragma endregion
+///----------
 
 struct StatePlane
 {
@@ -170,15 +168,10 @@ struct StatePlane
         _cubicMeterCounter += std::min(5, _cells[x + z * _zAxisMagnitude] + 4 - _waterLine);
     }
 
-    bool check(int32_t x, int32_t z, int32_t prevX, int32_t prevZ) const
+    bool check(int32_t x, int32_t z, int32_t invokingX, int32_t invokingZ) const
     {
-        return  (x < _xAxisMagnitude && x >= 0)                       &&
-                (z < _zAxisMagnitude && z >= 0)                       &&
-                _states[x + _zAxisMagnitude * z]                      &&
-
-
-                _cells[x + _zAxisMagnitude * z] - 1 + 4 >= _waterLine                               &&
-                abs(_cells[prevX + prevZ * _zAxisMagnitude] - _cells[x + z * _zAxisMagnitude]) < 5;
+        return  _states[x + _zAxisMagnitude * z]  && _cells[x + _zAxisMagnitude * z] - 1 + 4 >= _waterLine
+                && abs(_cells[invokingX + invokingZ * _zAxisMagnitude] - _cells[x + z * _zAxisMagnitude]) < 5;
     }
 
     uint32_t getCubicMeterCounterValue() const
@@ -200,21 +193,21 @@ struct StatePlane
 
 static StatePlane statePlane;
 
-void TrackWaterBored(int32_t x, int32_t z, int32_t callingX, int32_t callingZ)
+void TrackWaterFlat(int32_t x, int32_t z, int32_t invokingX, int32_t invokingZ)
 {
-    if(statePlane.check(x, z, callingX, callingZ))
+    if(statePlane.check(x, z, invokingX, invokingZ))
     {
         statePlane.reset(x, z);
 
-        TrackWaterBored(x + 1, z, x, z);
-        TrackWaterBored(x - 1, z, x, z);
-        TrackWaterBored(x, z + 1, x, z);
-        TrackWaterBored(x, z - 1, x, z);
+        TrackWaterFlat(x + 1, z, x, z);
+        TrackWaterFlat(x - 1, z, x, z);
+        TrackWaterFlat(x, z + 1, x, z);
+        TrackWaterFlat(x, z - 1, x, z);
 
-        TrackWaterBored(x + 1, z + 1, x, z);
-        TrackWaterBored(x - 1, z - 1, x, z);
-        TrackWaterBored(x - 1, z + 1, x, z);
-        TrackWaterBored(x + 1, z - 1, x, z);
+        TrackWaterFlat(x + 1, z + 1, x, z);
+        TrackWaterFlat(x - 1, z - 1, x, z);
+        TrackWaterFlat(x - 1, z + 1, x, z);
+        TrackWaterFlat(x + 1, z - 1, x, z);
     }
 }
 
@@ -228,33 +221,31 @@ uint32_t PS2::zad3_1(const std::string &path)
     const uint32_t n = std::stoul(std::string(line, 0, line.find(' ', 0)));
     const uint32_t m = std::stoul(std::string(line, line.find(' ', 0) + 1));
 
-    std::vector<int32_t> cells(n*m, 0);
+    std::vector<int32_t> cells((n+2)*(m+2), -5);
 
-    uint32_t cellIter{0};
-    uint32_t depth{0};
-    while(getline(stream, line) && cellIter < n*m)
+    uint32_t cellIter{m+2 + 1};
+    while(getline(stream, line) && cellIter < (n+1)*(m+2) - 1)
     {
         uint32_t nextNum = 0;
         for(uint32_t i{0}; i<m; ++i)
         {
             int32_t tmpCell = static_cast<int32_t>(std::stoul(std::string(line, nextNum)));
 
-            if(tmpCell > depth)
-                depth = tmpCell;
-
             cells[cellIter++] = tmpCell;
             nextNum = line.find(' ', nextNum + 1);
         }
-    }
 
-    const auto outflowZ = static_cast<int32_t>(std::stoul(std::string(line, 0, line.find(' ', 0)))  - 1);  /// i
-    const auto outflowX = static_cast<int32_t>(std::stoul(std::string(line, line.find(' ', 0) + 1)) - 1); /// j
-    const auto outflowY = static_cast<int32_t>(cells[outflowX + outflowZ * n] - 1 + 4);
+        cellIter += 2;
+    }
+                                                                                            //-1 bo od zera + 1 bo powiekszone
+    const auto outflowZ = static_cast<int32_t>(std::stoul(std::string(line, 0, line.find(' ', 0)))  - 1 + 1); /// i
+    const auto outflowX = static_cast<int32_t>(std::stoul(std::string(line, line.find(' ', 0) + 1)) - 1 + 1); /// j
+    const auto outflowY = static_cast<int32_t>(cells[outflowX + outflowZ * (n+2)] - 1 + 4);
     stream.close();
 
-    statePlane = std::move(StatePlane(n, m, outflowY, std::move(cells)));
+    statePlane = std::move(StatePlane(n+2, m+2, outflowY, std::move(cells)));
 
-    TrackWaterBored(outflowX, outflowZ, outflowX, outflowZ);
+    TrackWaterFlat(outflowX, outflowZ, outflowX, outflowZ);
 
     return statePlane.getCubicMeterCounterValue();
 }

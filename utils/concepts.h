@@ -35,6 +35,9 @@ namespace utils
     template<typename T>
     concept unsigned_integer = std::is_unsigned_v<T>;
 
+    template<typename T>
+    concept integer = std::is_integral_v<T>;
+
     template<template <typename...> typename ContainerType, typename T, unsigned_integer size_type = size_t>
     concept is_indexable = requires(ContainerType<T>& container, size_type index)
     {
@@ -51,8 +54,21 @@ namespace utils
     concept is_swappable = requires
     {
         (std::is_copy_constructible_v<T> && std::is_copy_assignable_v<T>) ||
-                (std::is_move_constructible_v<T> && std::is_move_assignable_v<T>);
+        (std::is_move_constructible_v<T> && std::is_move_assignable_v<T>);
     };
+
+    template<typename T>
+    concept is_hashable = requires(T value)
+    {
+        { std::hash<T>{}(value) } -> same_as<size_t>;
+    };
+
+    template<typename T>
+    concept is_ordinalable = requires(T value)
+    {
+        { value.getOrdinalNumber() } -> integer;
+    };
+
 }
 
 
