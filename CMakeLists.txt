@@ -14,6 +14,6 @@ add_subdirectory(utils)
 add_subdirectory(dataStructers)
 add_subdirectory(sortingAlgs)
 add_subdirectory(Timer)
-add_subdirectory(_2)
+add_subdirectory(_3)
 
 target_link_libraries(${PROJECT_NAME} fmt Timer Zadania utils sortAlgs bst)

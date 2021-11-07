@@ -9,8 +9,8 @@ jest większa przypisuje się nową wartość maksymalną.
 Jeśli wartość nie wystąpiła, dodaje się ją do tablicy.
 
 
-*      T(n) =  ~n(25 + n/2 + 1) = n^2/2 + 26n  [zakładając najgorszy przypadek - wszystkie dane są unikalne i długości 25 bitów]
-*      Złożoność :: kwadratowa => O(n^2)
+*      T(N) =  ~N(25 + N/2 + 1) = N^2/2 + 26n  [zakładając najgorszy przypadek - wszystkie dane są unikalne i długości 25 bitów]
+*      Złożoność :: kwadratowa => O(N^2)
 <br />
 
 
@@ -67,8 +67,8 @@ algorytmu iteruje po danych z pierwszej tablicy, i traktując je jako indeksy dr
 wartości drugiej tablicy jednocześnie sprawdzając czy wartość jest większa od dotychczasowego maksimum, jeśli
 tak następuje aktualizacja zmiennej max.
 
-*      T(n) = n(25 + 2) + n = 29n  [zakładając najgorszy przypadek - wszystkie dane są długości 25 bitów]
-*      Złożoność :: liniowa => O(n)
+*      T(N) = N(25 + 2) + N = 29n  [zakładając najgorszy przypadek - wszystkie dane są długości 25 bitów]
+*      Złożoność :: liniowa => O(N)
 
 
 <br />

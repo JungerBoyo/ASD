@@ -170,8 +170,10 @@ struct StatePlane
 
     bool check(int32_t x, int32_t z, int32_t invokingX, int32_t invokingZ) const
     {
-        return  _states[x + _zAxisMagnitude * z]  && _cells[x + _zAxisMagnitude * z] - 1 + 4 >= _waterLine
-                && abs(_cells[invokingX + invokingZ * _zAxisMagnitude] - _cells[x + z * _zAxisMagnitude]) < 5;
+        return  _states[x + _zAxisMagnitude * z]  /* czy juz odznaczone */ &&
+                _cells[x + _zAxisMagnitude * z] - 1 + 4 >= _waterLine /* czy jest "podwoda" */  &&
+                /* czy przeplynie woda */
+                abs(_cells[invokingX + invokingZ * _zAxisMagnitude] - _cells[x + z * _zAxisMagnitude]) < 5;
     }
 
     uint32_t getCubicMeterCounterValue() const
