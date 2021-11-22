@@ -1,6 +1,5 @@
 #include "Zadania.h"
 #include <fstream>
-#include <fmt/format.h>
 
 struct Mercenary
 {
@@ -9,57 +8,121 @@ struct Mercenary
     int32_t debauch;
 };
 
-std::vector<Mercenary> mercenaries;
-std::vector<int32_t> subProblems;
-
-int32_t sizeP;
-int32_t sizeR;
-int32_t N;
-
-int32_t rentBest(int32_t p, int32_t r, int32_t n)
+template<typename T>
+struct SubProblemSpace
 {
-    int32_t notRenting{0};
-    int32_t renting{0};
+    SubProblemSpace(size_t xMag, size_t yMag, size_t zMag, T fillValue)
+        : _xMagnitude(xMag), _xyPlaneSize(xMag*yMag),
+          _problems(xMag*yMag*zMag, fillValue)
+        {}
 
-    if(n+1 < N)
+    void fillXYPlane(size_t z, T fillValue)
     {
-        notRenting = subProblems[p + r * sizeP + (n + 1) * sizeP * sizeR];
-        if (notRenting == -1)
-            notRenting = rentBest(p, r, n + 1);
+        for(size_t i{z*_xyPlaneSize}; i<z*_xyPlaneSize + _xyPlaneSize; ++i)
+            _problems[i] = fillValue;
     }
 
-    if(p - mercenaries[n].gluttony >= 0 && r - mercenaries[n].debauch >= 0)
+    T& operator()(size_t x, size_t y, size_t z)
     {
-        auto tmpP = p - mercenaries[n].gluttony;
-        auto tmpR = r - mercenaries[n].debauch;
+        return _problems[x + y*_xMagnitude + z*_xyPlaneSize];
+    }
 
-        if(n + 1 < N)
+    const T& operator()(size_t x, size_t y, size_t z) const
+    {
+        return _problems[x + y*_xMagnitude + z*_xyPlaneSize];
+    }
+
+    private:
+        size_t _xMagnitude;
+        size_t _xyPlaneSize;
+
+        std::vector<T> _problems;
+};
+
+struct RentBest
+{
+    RentBest(std::vector<Mercenary>&& mercenaries, SubProblemSpace<int32_t>&& subProblems)
+        : _subProblems(std::move(subProblems)),
+          _mercenaries(std::move(mercenaries))  {}
+
+    int32_t operator()(int32_t food, int32_t entmt, int32_t merIndex)
+    {
+        ++_recursionCounter;
+
+        /*
+         wartosc dla Z(food, entmt,  n - (merIndex+1)) (nie bierze)
+         */
+        int32_t notRenting{0};
+
+        /*
+         wartosc dla mercenaries[merIndex].strength +
+         Z(food - mercenaries[merIndex].gluttony, entmt - mercenaries[merIndex].debauch,
+         n - (merIndex+1))
+         */
+        int32_t renting{0};
+
+
+        notRenting = _subProblems(food, entmt, merIndex+1);
+        if (notRenting == -1)
+            notRenting = (*this)(food, entmt, merIndex+1);
+
+        if(food - _mercenaries[merIndex].gluttony >= 0 && entmt - _mercenaries[merIndex].debauch >= 0)
         {
-            renting = subProblems[tmpP + tmpR*sizeP + (n+1)*sizeP*sizeR];
+            auto tmpF = food - _mercenaries[merIndex].gluttony;
+            auto tmpE = entmt - _mercenaries[merIndex].debauch;
+
+            renting = _subProblems(tmpF, tmpE, merIndex+1);
             if(renting == -1)
-                renting = rentBest(tmpP, tmpR, n+1) + mercenaries[n].strength;
+                renting = (*this)(tmpF, tmpE, merIndex+1) + _mercenaries[merIndex].strength;
             else
-                renting +=  mercenaries[n].strength;
+                renting += _mercenaries[merIndex].strength;
         }
         else
         {
-            renting = mercenaries[n].strength;
-            subProblems[tmpP + tmpR*sizeP + (n+1)*sizeP*sizeR] =  renting;
-        }
-
-    }
-    else
-    {
-        if(n + 1 < N)
-        {
-            renting = subProblems[p + r * sizeP + (n + 1) * sizeP * sizeR];
+            renting = _subProblems(food, entmt, merIndex+1);
             if (renting == -1)
-                renting = rentBest(p, r, n + 1);
+                renting = (*this)(food, entmt, merIndex+1);
         }
+
+        return _subProblems(food, entmt, merIndex) = std::max(renting, notRenting);
     }
 
-    return subProblems[p + r*sizeP + n*sizeP*sizeR] = std::max(renting, notRenting);
-}
+    std::vector<uint32_t> RetrieveChosensList(int32_t food, int32_t entmt)
+    {
+        std::vector<uint32_t> chosenOnes;
+        chosenOnes.reserve(_mercenaries.size()/2);
+
+        auto tmpF = food;
+        auto tmpE = entmt;
+        for(uint32_t i{0}; i<_mercenaries.size(); ++i)
+        {
+            auto lhs = _subProblems(tmpF, tmpE, i+1);
+            auto rhs = -1;
+
+            if(tmpF - _mercenaries[i].gluttony >= 0 && tmpE - _mercenaries[i].debauch >= 0)
+                rhs = _subProblems(tmpF - _mercenaries[i].gluttony, tmpE - _mercenaries[i].debauch, i+1)
+                        + _mercenaries[i].strength;
+
+            if(rhs > lhs)
+            {
+                chosenOnes.push_back(i+1);
+                tmpF -= _mercenaries[i].gluttony;
+                tmpE -= _mercenaries[i].debauch;
+            }
+        }
+
+        return chosenOnes;
+    }
+
+    auto getRecursionCounterValue() const { return _recursionCounter; }
+
+
+    private:
+        size_t _recursionCounter{0};
+
+        std::vector<Mercenary> _mercenaries;
+        SubProblemSpace<int32_t> _subProblems;
+};
 
 std::vector<uint32_t> PS3::zad3(const std::string &path)
 {
@@ -67,16 +130,17 @@ std::vector<uint32_t> PS3::zad3(const std::string &path)
     std::string line;
 
     getline(stream, line);
-        sizeP = static_cast<int32_t>(std::stoul(std::string(line, 0, line.find(' ', 0)))  +1);
-        sizeR = static_cast<int32_t>(std::stoul(std::string(line, line.find(' ', 0) + 1)) +1);
+        auto foodStock = static_cast<int32_t>(std::stoul(std::string(line, 0, line.find(' ', 0)))  +1);
+        auto entmtStock = static_cast<int32_t>(std::stoul(std::string(line, line.find(' ', 0) + 1)) +1);
 
     getline(stream, line);
-        N = static_cast<int32_t>(std::stoul(line));
+        auto merCount = static_cast<int32_t>(std::stoul(line));
 
-    mercenaries = std::vector<Mercenary>{};
-    mercenaries.reserve(N);
+    std::vector<Mercenary> mercenaries;
+    mercenaries.reserve(merCount);
 
-    subProblems = std::vector<int32_t>((N+1) * sizeP * sizeR, -1);
+    SubProblemSpace<int32_t> subProblems(foodStock, entmtStock, (merCount+1), -1);
+    subProblems.fillXYPlane(merCount, 0);
 
     while(getline(stream, line))
     {
@@ -94,30 +158,14 @@ std::vector<uint32_t> PS3::zad3(const std::string &path)
         mercenaries.push_back(tmpMercenary);
     }
 
-    auto result = rentBest(sizeP-1, sizeR-1, 0);
-    std::vector<uint32_t> chosenOnes;
-    chosenOnes.reserve(N/2);
+    RentBest rentBestFn(std::move(mercenaries), std::move(subProblems));
 
-    auto tmpP = static_cast<int32_t>(sizeP-1);
-    auto tmpR = static_cast<int32_t>(sizeR-1);
-    for(uint32_t i{1}; i<N+1; ++i)
-    {
-        auto lhs = subProblems[tmpP + tmpR*sizeP + i*sizeP*sizeR];
-        auto rhs = -1;
+    auto result = rentBestFn(foodStock-1, entmtStock-1, 0); // Z(P, R, n)
+    auto merList = rentBestFn.RetrieveChosensList(foodStock-1, entmtStock-1);
 
-        if(tmpP - mercenaries[i-1].gluttony >= 0 && tmpR - mercenaries[i-1].debauch >= 0)
-            rhs = subProblems[tmpP - mercenaries[i-1].gluttony        +
-                             (tmpR - mercenaries[i-1].debauch)*sizeP +
-                             i*sizeP*sizeR                            ] + mercenaries[i-1].strength;
+    merList.push_back(result);
+    merList.push_back(rentBestFn.getRecursionCounterValue());
+    merList.push_back(merCount);
 
-        if(rhs > lhs)
-        {
-            chosenOnes.push_back(i);
-            tmpP -= mercenaries[i-1].gluttony;
-            tmpR -= mercenaries[i-1].debauch;
-        }
-    }
-
-    chosenOnes.push_back(result);
-    return chosenOnes;
+    return merList;
 }

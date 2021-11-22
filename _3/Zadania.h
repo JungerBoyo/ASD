@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cinttypes>
+#include <functional>
 #include <string>
 
 namespace PS3
