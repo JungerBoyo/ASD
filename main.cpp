@@ -11,7 +11,7 @@ void launch(const std::string& path)
         res = PS3::zad3(path);
     }
 
-    auto exp = res.back();
+    auto rawCompl = res.back();
     res.pop_back();
 
     auto recCounter = res.back();
@@ -24,13 +24,17 @@ void launch(const std::string& path)
         fmt::print("{}, ", merc);
     fmt::print("]\n");
 
-    double hitPercentage{recCounter};
-    for(auto i=0; i<exp; ++i)
-        hitPercentage /= 2.f;
-    hitPercentage = (1.f - hitPercentage)*100.f;
 
-    fmt::print("recursive calls :: {}(~2^{}), raw complexity :: 2^{}, % of sb hits :: ~{}%, time :: ~{}ms \n\n",
-            recCounter, static_cast<uint32_t>(std::log2p1(recCounter)), exp, hitPercentage, dur);
+    fmt::print("recursive calls :: {} \n"
+               "raw complexity :: {} \n"
+               "problem % reduction :: -{}%\n"
+               "time :: ~{}ms \n"
+               "memory usage :: ~{}MB\n\n",
+            recCounter,
+            rawCompl,
+            static_cast<uint32_t>((1.f - static_cast<float>(recCounter)/static_cast<float>(rawCompl)) * 100.f),
+            dur,
+            (static_cast<float>(rawCompl)*4.f)/1000000.f);
 }
 
 int main()

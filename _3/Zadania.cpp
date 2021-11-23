@@ -165,7 +165,7 @@ std::vector<uint32_t> PS3::zad3(const std::string &path)
 
     merList.push_back(result);
     merList.push_back(rentBestFn.getRecursionCounterValue());
-    merList.push_back(merCount);
+    merList.push_back((merCount+1) * foodStock * entmtStock);
 
     return merList;
 }
