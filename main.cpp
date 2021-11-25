@@ -1,55 +1,36 @@
 #include <fmt/format.h>
-#include "_3/Zadania.h"
+#include "dataStructers/Bst_avl.h"
 #include "Timer/Timer.h"
-
-void launch(const std::string& path)
-{
-    f64 dur{0.0};
-    std::vector<uint32_t> res;
-    {
-        Timer t(&dur);
-        res = PS3::zad3(path);
-    }
-
-    auto rawCompl = res.back();
-    res.pop_back();
-
-    auto recCounter = res.back();
-    res.pop_back();
-
-    fmt::print("{}  ", res.back());
-    res.pop_back();
-    fmt::print("[ ");
-    for(auto merc : res)
-        fmt::print("{}, ", merc);
-    fmt::print("]\n");
-
-
-    fmt::print("recursive calls :: {} \n"
-               "raw complexity :: {} \n"
-               "problem % reduction :: -{}%\n"
-               "time :: ~{}ms \n"
-               "memory usage :: ~{}MB\n\n",
-            recCounter,
-            rawCompl,
-            static_cast<uint32_t>((1.f - static_cast<float>(recCounter)/static_cast<float>(rawCompl)) * 100.f),
-            dur,
-            (static_cast<float>(rawCompl)*4.f)/1000000.f);
-}
 
 int main()
 {
+    bool f1 = true;
+    bool f2 = true;
 
-    launch("_3/dataFiles/data0.txt");
-    launch("_3/dataFiles/data1.txt");
-    launch("_3/dataFiles/data2.txt");
-    launch("_3/dataFiles/data3.txt");
-    launch("_3/dataFiles/data4.txt");
-    launch("_3/dataFiles/data5.txt");
-    launch("_3/dataFiles/data6.txt");
-    launch("_3/dataFiles/data7.txt");
+    bool f3 = f1^f2;
 
 
+    AVLTree<int> tree{};
+
+    tree.insert(10);
+    tree.insert(11);
+    tree.insert(12);
+    tree.insert(7);
+    tree.insert(6);
+    tree.insert(8);
+    tree.insert(9);
+
+    tree.erase(10);
+    /*
+    tree.insert(40);
+    tree.insert(30);
+    tree.insert(50);
+    tree.insert(24);
+    tree.insert(35);
+    tree.insert(27);
+
+    tree.erase(40);
+    */
 
     return 0;
 }

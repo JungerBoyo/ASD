@@ -50,17 +50,16 @@ struct RentBest
         ++_recursionCounter;
 
         /*
-         wartosc dla Z(food, entmt,  n - (merIndex+1)) (nie bierze)
+         wartosc dla Z(food, entmt,  (merIndex+1)) (nie bierze)
          */
         int32_t notRenting{0};
 
         /*
          wartosc dla mercenaries[merIndex].strength +
          Z(food - mercenaries[merIndex].gluttony, entmt - mercenaries[merIndex].debauch,
-         n - (merIndex+1))
+         (merIndex+1))
          */
         int32_t renting{0};
-
 
         notRenting = _subProblems(food, entmt, merIndex+1);
         if (notRenting == -1)
@@ -78,11 +77,7 @@ struct RentBest
                 renting += _mercenaries[merIndex].strength;
         }
         else
-        {
-            renting = _subProblems(food, entmt, merIndex+1);
-            if (renting == -1)
-                renting = (*this)(food, entmt, merIndex+1);
-        }
+            return _subProblems(food, entmt, merIndex) = notRenting; // bo renting = notRenting;
 
         return _subProblems(food, entmt, merIndex) = std::max(renting, notRenting);
     }

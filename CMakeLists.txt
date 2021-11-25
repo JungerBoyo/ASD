@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS -pthread)
 set(CMAKE_CXX_FLAGS -fconcepts)
 
-include_directories(utils/)
+include_directories("utils/" )
 
 add_executable(ASD_PS main.cpp)
 
