@@ -2,6 +2,7 @@
 #define ASD_PS_ZADANIA_H
 
 #include <string_view>
+#include <string>
 #include <optional>
 #include <vector>
 

@@ -8,7 +8,6 @@
 #include <IndexedPriorityQueue.h>
 #include <DynamicBitset.h>
 
-
 struct Edge
 {
     bool operator==(uint16_t otherM) const
@@ -35,16 +34,18 @@ struct StructureInfo
     std::optional<uint16_t> d;
 };
 
-std::string_view dbg_date;
+constexpr uint32_t InvalidCost{UINT32_MAX/2};
+using PathCost_t = uint32_t;
+using VertexIndex_t = uint16_t;
 
-uint32_t Dijkstra(const std::vector<Vertex>& graph, uint16_t m1, uint16_t m2, uint16_t limit)
+uint32_t
+Dijkstra(const std::vector<Vertex>& graph, std::vector<PathCost_t>& bestPaths, uint16_t m1, uint32_t w, uint16_t m2, uint16_t limit)
 {
-    std::vector<uint32_t> vertexToBestAccumWage(graph.size(), {UINT32_MAX});
     DSTRS::DynamicBitset visited(graph.size(), false);
-    DSTRS::IndexedPriorityQueue_BH<uint16_t, uint32_t> pq(graph.size());
+    DSTRS::IndexedPriorityQueue_BH<VertexIndex_t, UINT16_MAX, PathCost_t, InvalidCost> pq(graph.size());
 
-    vertexToBestAccumWage[m1] = 0;
-    pq.push(m1, 0);
+    bestPaths[m1] = w;
+    pq.push(m1, w);
 
     while(!pq.empty())
     {
@@ -55,26 +56,27 @@ uint32_t Dijkstra(const std::vector<Vertex>& graph, uint16_t m1, uint16_t m2, ui
         if(accumWagesMin > limit || minVertex == m2)
             break;
 
-        if(vertexToBestAccumWage[minVertex] >= accumWagesMin)
+        if(bestPaths[minVertex] >= accumWagesMin)
             for(auto edge : graph[minVertex].edges)
                 if(!visited[edge.vertex])
-                    if(accumWagesMin + edge.wage + 5 < vertexToBestAccumWage[edge.vertex])
+                    if(accumWagesMin + edge.wage + 5 < bestPaths[edge.vertex])
                     {
                         auto newWage = accumWagesMin + edge.wage + 5;
-                        if(vertexToBestAccumWage[edge.vertex] != UINT32_MAX)
+                        if(pq.contains(edge.vertex))
                             pq.decrease(edge.vertex, newWage);
                         else
                             pq.push(edge.vertex, newWage);
 
-                         vertexToBestAccumWage[edge.vertex] = newWage;
+                         bestPaths[edge.vertex] = newWage;
                     }
     }
 
-    return vertexToBestAccumWage[m2] - 5;
+    return bestPaths[m2] - 5;
 }
 
 std::vector<PS5::CommandInfo> PS5::Zad5(std::string_view dataPath)
 {
+#pragma region DataParsing
     std::ifstream stream(dataPath.data());
 
     std::string line;
@@ -136,6 +138,10 @@ std::vector<PS5::CommandInfo> PS5::Zad5(std::string_view dataPath)
         structureInfos.emplace_back(std::move(info));
     }
 
+    std::vector<Vertex> graph(n);
+    std::vector<std::vector<PathCost_t>> allBestPaths;
+    allBestPaths.reserve(z);
+
     std::vector<CommandInfo> cmdInfos;
     cmdInfos.reserve(z);
 
@@ -157,15 +163,16 @@ std::vector<PS5::CommandInfo> PS5::Zad5(std::string_view dataPath)
         end = line.length();
         std::from_chars(&line[begin], &line[end], info.t);
 
+        allBestPaths.emplace_back(std::vector<PathCost_t>(n, InvalidCost));
+        allBestPaths.back()[info.m1] = 0;
         cmdInfos.push_back(info);
     }
 
     stream.close();
+#pragma endregion
 
-    std::vector<Vertex> graph(n);
-    const static auto dijkstra{[&graph](uint16_t m1, uint16_t m2, uint16_t lim)
-    {
-        return Dijkstra(graph, m1, m2, lim);
+    const static auto dijkstra{[&graph, &allBestPaths](uint16_t i, uint16_t m1, uint32_t w, uint16_t m2, uint16_t lim){
+        return Dijkstra(graph, allBestPaths[i], m1, w, m2, lim);
     }};
 
     for(const auto& stInfo : structureInfos)
@@ -195,19 +202,27 @@ std::vector<PS5::CommandInfo> PS5::Zad5(std::string_view dataPath)
         tasks.reserve(z);
         for(size_t i{0}; i<z; ++i)
             if(!cmdInfos[i].result.has_value()       &&
-               !graph[cmdInfos[i].m1].edges.empty()  &&
-               !graph[cmdInfos[i].m2].edges.empty())
+               !graph[cmdInfos[i].m1].edges.empty())
             {
-                //dbg_date = stInfo.date;
-//
-                //auto result = dijkstra(cmdInfos[i].m1, cmdInfos[i].m2, cmdInfos[i].t);
-                //if(result <= cmdInfos[i].t)
-                //{
-                //    cmdInfos[i].m2 = result;
-                //    cmdInfos[i].result.emplace(stInfo.date);
-                //}
+                auto newCostXy = allBestPaths[i][stInfo.m2] + w + 5;
+                auto newCostYx = allBestPaths[i][stInfo.m1] + w + 5;
 
-                tasks.emplace_back(i, std::async(std::launch::async, dijkstra, cmdInfos[i].m1, cmdInfos[i].m2, cmdInfos[i].t));
+                uint16_t vertex;
+                uint32_t weight;
+                if(allBestPaths[i][stInfo.m1] > newCostXy)
+                {
+                    vertex = stInfo.m1;
+                    weight = newCostXy;
+                }
+                else if(allBestPaths[i][stInfo.m2] > newCostYx)
+                {
+                    vertex = stInfo.m2;
+                    weight = newCostYx;
+                }
+                else
+                    continue;
+
+                tasks.emplace_back(i, std::async(std::launch::async, dijkstra, i, vertex, weight, cmdInfos[i].m2, cmdInfos[i].t));
             }
 
         for(auto& task : tasks)
