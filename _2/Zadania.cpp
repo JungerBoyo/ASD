@@ -3,12 +3,13 @@
 #include <array>
 #include <fstream>
 
+
 struct DynamicBitset
 {
     DynamicBitset() = default;
 
     DynamicBitset(std::size_t bitsCount, bool bitsState)
-        : _bits(bitsCount / 32 + static_cast<uint32_t>(bitsCount % 32 != 0), bitsState ? UINT32_MAX : 0)
+            : _bits(bitsCount / 32 + static_cast<uint32_t>(bitsCount % 32 != 0), bitsState ? UINT32_MAX : 0)
     {}
 
     void set(std::size_t index)
@@ -26,11 +27,10 @@ struct DynamicBitset
         return _bits[index/32] & (setMask >> index%32);
     }
 
-    private:
-        static constexpr uint32_t setMask   = 1 << 31;
-        std::vector<uint32_t> _bits;
+private:
+    static constexpr uint32_t setMask   = 1 << 31;
+    std::vector<uint32_t> _bits;
 };
-
 ///------------
 #pragma region zad30
 

@@ -1,36 +1,32 @@
 #include <fmt/format.h>
-#include "dataStructers/Bst_avl.h"
 #include "Timer/Timer.h"
+#include "_5/Zadania.h"
 
 int main()
 {
-    bool f1 = true;
-    bool f2 = true;
+    //DSTRS::IndexedPriorityQueue_BH<uint16_t, uint32_t> pq(7);
 
-    bool f3 = f1^f2;
+    //pq.push(0, 3);
+    //pq.push(2, 9);
+    //pq.push(3, 45);
+    //pq.push(1, 7);
+    //pq.push(5, 1);
+    //pq.push(4, 8);
+    //pq.push(6, 1);
+//
+    //pq.pop();
+//
+    std::vector<PS5::CommandInfo> result;
+    f64 dur{.0};
+    {
+        Timer timer{&dur};
+        result = PS5::Zad5("_5/dataFiles/data2in");
+    }
 
+    fmt::print("{}\n\n", dur);
 
-    AVLTree<int> tree{};
-
-    tree.insert(10);
-    tree.insert(11);
-    tree.insert(12);
-    tree.insert(7);
-    tree.insert(6);
-    tree.insert(8);
-    tree.insert(9);
-
-    tree.erase(10);
-    /*
-    tree.insert(40);
-    tree.insert(30);
-    tree.insert(50);
-    tree.insert(24);
-    tree.insert(35);
-    tree.insert(27);
-
-    tree.erase(40);
-    */
+    for(const auto& info : result)
+        fmt::print("{}\n", info.result.has_value() ? *info.result : "NIE");
 
     return 0;
 }

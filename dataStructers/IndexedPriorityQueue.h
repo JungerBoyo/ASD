@@ -1,5 +1,5 @@
-#ifndef ASD_PS_PRIORITYQUEUE_H
-#define ASD_PS_PRIORITYQUEUE_H
+#ifndef ASD_PS_INDEXEDPRIORITYQUEUE_H
+#define ASD_PS_INDEXEDPRIORITYQUEUE_H
 
 #include <vector>
 #include <tuple>
@@ -8,105 +8,99 @@
 
 namespace DSTRS
 {
-    /*
-     * KeyTypeMajor = Accumlated wages
-     * KeyTypeMinor = vertex
-     */
-    template<typename KeyTypeMajor, typename KeyTypeMinor>
-    requires std::is_unsigned_v<KeyTypeMajor> && std::is_unsigned_v<KeyTypeMinor>
-    class PriorityQueue
+    template<typename KeyType, KeyType InvalidKey, typename T, T InvalidValue>
+    requires std::is_unsigned_v<KeyType> && std::is_unsigned_v<T>
+    class IndexedPriorityQueue_BH
     {
         public:
-            PriorityQueue(size_t KeyTypeMajorCount, size_t KeyTypeMinorCount)
-                : _queueValuesIndices(KeyTypeMinorCount), _queue(KeyTypeMajorCount) {}
+            explicit IndexedPriorityQueue_BH(size_t maxValuesCount)
+                : _keyToHeapIndex(maxValuesCount, InvalidKey) {}
 
-            void push(KeyTypeMajor key, KeyTypeMinor value)
+            void push(KeyType key, T value)
             {
-                if(key > _queue.size())
+                KeyType index = _heap.size();
+                _heap.push_back({key, value});
+                _keyToHeapIndex[_heap.back().first] = index;
+
+                while(index && _heap[index].second < _heap[(index >> 1) - (1 - (index & 1))].second)
                 {
-                    auto newSize{2 * _queue.size()};
-                    if (key > newSize)
-                    {
-                        try{
-                            _queue.resize(key + 1);
-                        }
-                        catch(std::exception& ex) {
-                            std::cout << "bad alloc : min" << _minIndex << "|" << key + 1;
-                        }
+                    auto newIndex = (index >> 1) - (1 - (index & 1));
+                    _keyToHeapIndex[_heap[index].first] = newIndex;
+                    _keyToHeapIndex[_heap[newIndex].first] = index;
 
-                    }
-                    else
-                    {
-                        try{
-                            _queue.resize(newSize + 1);
-                        }
-                        catch(std::exception& ex) {
-                            std::cout << "bad alloc : min" << _minIndex << "|" << newSize + 1;
-                        }
-                    }
+                    auto tmpValue = _heap[index];
+                    _heap[index] = _heap[newIndex];
+                    _heap[newIndex] = tmpValue;
 
-                }
-
-                _queueValuesIndices[value] = _queue[key].size();
-                _queue[key].push_back(value);
-
-                if(key < _minIndex)
-                    _minIndex = key;
-
-                _empty = false;
-            }
-
-            auto top() const
-            {
-                return std::make_tuple(_minIndex, _queue[_minIndex].back());
-            }
-
-            void pop()
-            {
-                _queue[_minIndex].pop_back();
-
-                if(_queue[_minIndex].empty())
-                {
-                    for(auto i{_minIndex}; i<_queue.size(); ++i)
-                        if(!_queue[i].empty())
-                        {
-                            _minIndex = i;
-                            return;
-                        }
-
-                    _minIndex = std::numeric_limits<KeyTypeMajor>::max();
-                    _empty = true;
+                    index = newIndex;
                 }
             }
 
-            bool empty() const
+            auto pop()
             {
-                return _empty;
+                auto minValue = _heap.front();
+                _heap.front() = _heap.back();
+                _heap.pop_back();
+                _keyToHeapIndex[_heap.front().first] = 0;
+                _keyToHeapIndex[minValue.first] = InvalidKey;
+
+                KeyType index{0};
+                while((index << 1) + 1 < _heap.size())
+                {
+                    auto lhs = _heap[(index << 1) + 1].second;
+                    auto rhs = (index << 1) + 2 < _heap.size() ? _heap[(index << 1) + 2].second : InvalidValue;
+
+                    KeyType newIndex = lhs < rhs ? (index << 1) + 1 : (index << 1) + 2;
+
+                    if(_heap[index].second <= _heap[newIndex].second)
+                        break;
+
+                    _keyToHeapIndex[_heap[index].first] = newIndex;
+                    _keyToHeapIndex[_heap[newIndex].first] = index;
+
+                    auto tmpValue = _heap[index];
+                    _heap[index] = _heap[newIndex];
+                    _heap[newIndex] = tmpValue;
+
+                    index = newIndex;
+                }
+
+                return minValue;
             }
 
-            void decrease(KeyTypeMajor keyMajor, KeyTypeMinor value, KeyTypeMajor newKeyMajor)
+            auto empty() const
             {
-                auto& oldKeyVec = _queue[keyMajor];
-                oldKeyVec[_queueValuesIndices[value]] = oldKeyVec.back();
-                _queueValuesIndices[oldKeyVec.back()] = _queueValuesIndices[value];
-                oldKeyVec.pop_back();
+                return _heap.empty();
+            }
 
-                push(newKeyMajor, value);
+            auto contains(KeyType key) const
+            {
+                return _keyToHeapIndex[key] != InvalidKey;
+            }
+
+            void decrease(KeyType key, T value)
+            {
+                KeyType index = _keyToHeapIndex[key];
+                _heap[_keyToHeapIndex[key]].second = value;
+
+                while(index && _heap[index].second < _heap[(index >> 1) - (1 - (index & 1))].second)
+                {
+                    auto newIndex = (index >> 1) - (1 - (index & 1));
+                    _keyToHeapIndex[_heap[index].first] = newIndex;
+                    _keyToHeapIndex[_heap[newIndex].first] = index;
+
+                    auto tmpValue = _heap[index];
+                    _heap[index] = _heap[newIndex];
+                    _heap[newIndex] = tmpValue;
+
+                    index = newIndex;
+                }
             }
 
         private:
-            KeyTypeMajor _minIndex{std::numeric_limits<KeyTypeMajor>::max()};
-            bool _empty{true};
-            std::vector<size_t> _queueValuesIndices;
-            std::vector<std::vector<KeyTypeMinor>> _queue;
+            std::vector<KeyType> _keyToHeapIndex;
+            std::vector<std::pair<KeyType, T>> _heap;
     };
-
-
-    //template<typename KeyType, typename T>
-    //class IndexedPriorityQueue
-    //{
-    //
-    //};
 }
 
 #endif

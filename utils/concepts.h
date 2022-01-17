@@ -21,13 +21,19 @@ namespace utils
     };
 
     template<typename T>
+    concept has_operatorEQ = requires(const T& lhs, const T& rhs)
+    {
+        { operator==(lhs, rhs) } -> same_as<bool>;
+    };
+
+    template<typename T>
     concept has_operatorHI = requires(const T& lhs, const T& rhs)
     {
         { operator>(lhs, rhs) } -> same_as<bool>;
     };
 
     template<typename T>
-    concept has_ostream = requires(const T& value)
+    concept has_ostream = requires(T value)
     {
         { std::cout << value } -> same_as<std::ostream>;
     };
@@ -38,8 +44,8 @@ namespace utils
     template<typename T>
     concept integer = std::is_integral_v<T>;
 
-    template<template <typename...> typename ContainerType, typename T, unsigned_integer size_type = size_t>
-    concept is_indexable = requires(ContainerType<T>& container, size_type index)
+    template<template <typename...> typename ContainerType, typename T>
+    concept is_indexable = requires(ContainerType<T>& container, size_t index)
     {
         { container.operator[] (index) } noexcept -> same_as<T>;
     };
@@ -62,6 +68,14 @@ namespace utils
     {
         { std::hash<T>{}(value) } -> same_as<size_t>;
     };
+
+    template<typename T>
+    concept is_semblable_startsWith = requires(const T& resembling, const T& resemblance)
+    {
+        { resembling.starts_with(resemblance) } -> same_as<bool>;
+    };
+
+
 
     template<typename T>
     concept is_ordinalable = requires(T value)
